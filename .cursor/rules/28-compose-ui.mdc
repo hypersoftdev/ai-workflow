@@ -1,0 +1,28 @@
+---
+description: Jetpack Compose UI, feature modules, Screen/Content split, and Compose navigation. Applies when uiFramework is compose.
+globs: ["**/feature*/**/*.kt", "**/core/design/**/*.kt", "**/navigation/**/*.kt"]
+alwaysApply: false
+---
+
+# Compose UI (invariants)
+
+**Full detail (modules, naming, NavGraph, Screen template):** [reference/compose-ui.md](reference/compose-ui.md)
+
+Applies when `.cursor/project-settings.json` `uiFramework` is `"compose"`. If `uiFramework` is `"xml"`, ignore this rule and follow `09-resources-xml` / `19-base-ui`.
+
+Canonical structure: AnimeHub (`:feature-*`, `:core-design`, `:app` `NavGraph.kt`).
+
+## Must follow
+
+- One Gradle module per feature: `:feature-<kebab>` — **no** monolith `:presentation`
+- Package: `{applicationId}.feature.<name>` with `di` / `intent` / `state` / `effect` / `viewModel` + `*Screen.kt` at the feature root
+- `*Screen` (stateful: `koinViewModel`, `collectAsStateWithLifecycle`, `LaunchedEffect` for effects) + private `*ScreenContent` (stateless)
+- Route constants on the Screen file (`HOME_ROUTE = "home"`); args via `"feature/{id}"` + `createRouteFeature(id)`
+- Root `NavHost` in `:app` `navigation/NavGraph.kt`; nested graphs for tabs (content slots, not feature→feature deps)
+- Features **never** take `NavController` — `onNavigate*` lambdas only; ViewModel emits Effects
+- Material3 + `AppTheme` from `:core-design`; strings in `:core-ui`; Coil `AsyncImage` for remote images
+- `buildFeatures { compose = true }` + Compose Compiler plugin (`org.jetbrains.kotlin.plugin.compose` / `kotlin-compose`) — **not** `kotlin-android`. Compose BOM via catalog
+- Feature modules depend on `:domain` + `:core-*` — **never** `:data` or other `:feature-*`
+- Previews wrap `AppTheme`; inline `dp`/`sp` multiples of 4; no `dimens.xml`
+
+Read [reference/compose-ui.md](reference/compose-ui.md) when scaffolding or changing Compose screens.

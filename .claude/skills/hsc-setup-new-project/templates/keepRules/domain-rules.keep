@@ -1,0 +1,4 @@
+# Copy to domain/src/main/keepRules/rules.keep
+# Replace YOUR.PACKAGE with the app namespace (consumer rules for app R8).
+
+-keep class YOUR.PACKAGE.domain.entity.** { *; }

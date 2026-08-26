@@ -1,0 +1,8 @@
+# Copy to app/src/main/keepRules/rules.keep
+# AGP 9.3+ combines all *.keep files in src/main/keepRules — do not declare in Gradle.
+
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+-keep class * implements android.os.Parcelable {
+    public static final ** CREATOR;
+}

@@ -1,0 +1,7 @@
+# Copy to feature-*/src/main/keepRules/rules.keep (compose UI)
+# Replace YOUR.PACKAGE with the app namespace.
+
+-keep class YOUR.PACKAGE.feature.**.state.** { *; }
+-keep class YOUR.PACKAGE.feature.**.intent.** { *; }
+-keep class YOUR.PACKAGE.feature.**.effect.** { *; }
+-keep class YOUR.PACKAGE.feature.**.model.** { *; }

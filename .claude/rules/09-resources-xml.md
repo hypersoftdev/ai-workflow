@@ -1,0 +1,29 @@
+---
+description: XML layouts, drawables, strings, colors, and themes
+paths:
+  - "**/res/**/*.xml"
+---
+
+# XML resources (invariants)
+
+**Full detail (all naming tables, examples, BAD/GOOD):** [reference/resources-xml.md](reference/resources-xml.md)
+
+Applies to `res/**/*.xml` (strings, colors, themes, drawables, and XML layouts). When `uiFramework` is `compose`, still obey string/color/theme/drawable rules; **do not** author `fragment_*` screen layouts — use `28-compose-ui` + `hsc-figma-to-compose`.
+
+## Must follow
+
+- Layout prefixes: `fragment_` / `activity_` / `item_` / `dialog_` / `bottom_sheet_` / `layout_`
+- View IDs: Hungarian + camelCase (`mb`, `mtv`, `siv`, `mcv`, `cl`, `rcv`, …)
+- **No `dimens.xml`** — inline `dp`/`sp`, multiples of 4
+- All user-facing strings in **one** `:core-ui` `strings.xml` (App → General → Content Descriptions `cd_*` → Screen-wise)
+- Material widgets only; images = `ShapeableImageView` (`siv`); clickable icons = `ButtonStyle.IconButton` (`mb` + `app:icon`)
+- Programmatic images: Glide `loadImage` — not `setImageResource` / raw `Glide.with` in UI
+- MaterialButton solid+stroke: tint / stroke / cornerRadius on the button — **no** `bg_shape_*` for that case
+- Filled/text buttons: `layout_height="wrap_content"` — no fixed height + inset hacks
+- Clickable chips / language selectors: `MaterialButton` + `iconGravity="end"` — not MTV + `drawableEnd`
+- View Binding only; RecyclerView manager / orientation / spanCount in XML unless dynamic
+- Portrait + landscape; theme attrs for colors; section headers in strings/colors/themes
+- Default screen color via theme `android:windowBackground` — **not** `android:background="?attr/colorSurface"` on default roots
+- XML closing: blank line between nested container closes; no extra blank after root
+
+Read [reference/resources-xml.md](reference/resources-xml.md) before writing or changing layouts.

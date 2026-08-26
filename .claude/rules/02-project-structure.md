@@ -1,0 +1,122 @@
+---
+description: Multi-module project structure and package layout
+paths:
+  - "settings.gradle.kts"
+  - "**/build.gradle.kts"
+  - "**/.gitignore"
+---
+
+## Standard modules
+
+| Module | Responsibility |
+|--------|----------------|
+| `:app` | Application class, DI aggregation, manifest, composition root only — **no `res/values/`** (themes/strings/colors in `:core-ui`) |
+| `:domain` | Entities, repository **interfaces**, UseCases, `useCaseModule` (`lazyModule`) — no Android UI; **never** repo impls |
+| `:data` | Repository **impls**, DataSources, `dataModule` (`lazyModule` with `//// DataSources` then `//// Repositories`) — **never** UseCases or repo interfaces |
+| `:presentation` | Screens, ViewModels, navigation, feature MVI packages — **xml only**. Compose apps use `:feature-*` instead (no `:presentation`) |
+| `:core-*` | Shared utilities — create as many core modules as needed |
+| `:core-common` | Pure Kotlin shared types / `Constants` (TAGs) — no Android UI or DI |
+| `:core-platform` | Network, location, Firebase helpers, platform services, **`firebase-messaging` dep** (new projects) |
+| `:core-ui` | Base UI (`Parent*` when xml), themes, drawables, fonts, anim, **single shared `strings.xml`**, extensions |
+| `:core-design` | Compose `Color` / `Type` / `AppTheme` — **compose only** |
+| `:feature-*` | xml: optional self-contained feature libraries. **compose: required** — one module per screen cluster (`28-compose-ui`) |
+| `:gmaAds` (optional) | AdMob / mediation — only when product has ads. Keep the **existing** ads architecture (managers / ad ViewModels). **Not** MVI unless the user explicitly asks |
+
+- Use as many `:core-*` modules as the project needs; keep each focused
+- Gradle module names: kebab-case (`:core-ui`, `:feature-auth`, `:gmaAds`)
+- Billing / prefs / Remote Config implementations live in `:data`; Firebase helpers in `:core-platform`
+
+## Feature package layout (presentation)
+
+**xml** (`uiFramework` `xml`) — inside `:presentation`:
+
+```
+presentation/<featureName>/
+  di/          # *PresentationModule
+  intent/      # sealed class *Intent
+  state/       # data class *State
+  effect/      # sealed class *Effect
+  viewModel/   # *ViewModel
+  ui/          # Fragment / Activity / Dialog / BottomSheet
+  adapter/     # optional ListAdapter
+  mapper/      # optional domain → UI mappers
+```
+
+**compose** (`uiFramework` `compose`) — Gradle module `:feature-<kebab>` (AnimeHub):
+
+```
+feature/<name>/
+  <Name>Screen.kt   # ROUTE + Screen + ScreenContent
+  di/               # *FeatureModule
+  intent/ state/ effect/ viewModel/
+  components/       # optional items / dialogs / sheets
+```
+
+Feature folders: camelCase (`onBoarding`, `userProfile`). Ads (`:gmaAds`) do **not** use this MVI package layout — keep the existing ads module structure unless the user explicitly asks.
+
+## Package naming
+
+```
+<applicationId>.<layer>.<area>.<subpackage>
+```
+
+| Layer | Example suffix |
+|-------|----------------|
+| Domain | `domain.entity`, `domain.repository.*`, `domain.usecase.*` |
+| Data | `data.*.repository`, `data.*.dataSource`, `data.di` |
+| Presentation | `presentation.<feature>.{intent\|state\|effect\|viewModel\|ui\|di}` (xml) or `feature.<name>.{intent\|state\|effect\|viewModel\|di}` (compose) |
+| Core | `core.common`, `core.platform`, `core.ui` |
+
+## Allowed dependencies
+
+| From | To |
+|------|----|
+| `presentation` | `domain`, any `core-*`, optional `feature-*`, optional ads module |
+| `feature-*` (compose) | `domain`, `core-common`, `core-ui`, `core-design` — **never** `:data` or other `:feature-*` |
+| `data` | `domain`, any `core-*` (prefer **not** depending on `:core-ui`) |
+| `domain` | coroutines-core, Koin DSL (`lazyModule` for UseCases), optional pure feature libs |
+| ads module | `data` and/or `core-*` when gating on premium/prefs (if project uses that pattern) |
+| `app` | all modules (composition root) |
+
+```
+app (Composition Root)
+ |
+ ↓
+presentation → domain ← data
+ |
+ ↓
+core modules (shared utilities)
+```
+
+## Module `.gitignore` (mandatory)
+
+Every Gradle module must include its own `.gitignore` (in addition to the root `.gitignore`).
+
+| Module type | Typical contents |
+|-------------|------------------|
+| Library (`:domain`, `:data`, `:presentation`, `:core-*`, `:feature-*`, ads) | `/build` |
+| Application (`:app`) | `/build` and `/release` |
+
+```gitignore
+/build
+```
+
+```gitignore
+# :app
+/build
+/release
+```
+
+- Add `.gitignore` whenever creating a new module
+- Root `.gitignore` still covers `local.properties`, `.gradle`, IDE files, etc.
+- Never commit module `/build` or `:app` `/release` outputs
+
+## Forbidden
+
+- `presentation` → `data`
+- `feature-*` → `data` or `feature-*` → `feature-*`
+- `domain` → `presentation`, `data`, Android UI libs
+- `core-common` → Android UI / DI frameworks
+- Circular module dependencies
+- Feature-specific strings outside the shared `:core-ui` strings file
+- Modules without a local `.gitignore`
