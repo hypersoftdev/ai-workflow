@@ -8,9 +8,9 @@ Apps copy these folders into the project root — do not fork rules/skills insid
 |------|------------------|
 | **Cursor** | [`.cursor/`](.cursor/) |
 | **Claude Code** | [`.claude/`](.claude/) |
-| **Android Studio Gemini** | [`.skills/`](.skills/) (localization) |
+| **Android Studio Gemini** | [`.agents/`](.agents/) (localization) |
 
-Keep `.cursor/` and `.claude/` in sync. If you change a rule or skill in one, update the twin in the other. `.skills/` is Gemini-only (localization) — it is not a Cursor/Claude twin.
+Keep `.cursor/` and `.claude/` in sync. If you change a rule or skill in one, update the twin in the other. `.agents/` is Gemini Agent-only (localization) — it is not a Cursor/Claude twin. Android Studio loads skills from `.agents/skills` (not `.skills` or `.gemini`).
 
 ## What’s in this repo
 
@@ -20,29 +20,29 @@ Keep `.cursor/` and `.claude/` in sync. If you change a rule or skill in one, up
 | [`.cursor/skills/`](.cursor/skills/) | Cursor playbooks (`/hs-skill-name`) |
 | [`.claude/rules/`](.claude/rules/) | Same law, Claude Code format |
 | [`.claude/skills/`](.claude/skills/) | Claude Code playbooks (`/hsc-skill-name`) |
-| [`.skills/hsg-localize/`](.skills/hsg-localize/) | Android Studio Gemini localization (`hsg-localize`) |
+| [`.agents/skills/hsg-localize/`](.agents/skills/hsg-localize/) | Android Studio Gemini localization (`hsg-localize`) |
 | [`MUST_READ_BEFORE_SKILL_CHANGES.md`](MUST_READ_BEFORE_SKILL_CHANGES.md) | How to edit this template |
 
 Full skill map and rules index:
 
 - Cursor: [`.cursor/README.md`](.cursor/README.md)
 - Claude Code: [`.claude/README.md`](.claude/README.md)
-- Gemini localization: [`.skills/hsg-localize/SKILL.md`](.skills/hsg-localize/SKILL.md)
+- Gemini localization: [`.agents/skills/hsg-localize/SKILL.md`](.agents/skills/hsg-localize/SKILL.md)
 
 ## How teammates use this in an app
 
-1. Copy `.cursor/` and/or `.claude/` into the Android app root. For Android Studio Gemini localization, also copy `.skills/`.
-2. Open the app in Cursor, run `claude` at the repo root, or open the app in Android Studio (Gemini).
-3. **Cursor:** type `/hs` (for example `/hs-setup-new-project`). **Claude Code:** type `/hsc` (for example `/hsc-setup-new-project`). **Gemini:** type `/hsg` (for example `/hsg-localize`) for string resources. Cursor skills say **Hypersoft Cursor Skill:**; Claude skills say **Hypersoft Claude Skill:**; Gemini skills say **Hypersoft Gemini Skill:**. Do not pick Figma plugin skills (“Created by Figma”) for Android screens.
+1. Copy `.cursor/` and/or `.claude/` into the Android app root. For Android Studio Gemini localization, also copy `.agents/`.
+2. Open the app in Cursor, run `claude` at the repo root, or open the app in Android Studio (Gemini Agent).
+3. **Cursor:** type `/hs` (for example `/hs-setup-new-project`). **Claude Code:** type `/hsc` (for example `/hsc-setup-new-project`). **Android Studio Gemini:** type `@hsg-localize` (not `/hsg-localize`). Cursor skills say **Hypersoft Cursor Skill:**; Claude skills say **Hypersoft Claude Skill:**; Gemini skills say **Hypersoft Gemini Skill:**. Do not pick Figma plugin skills (“Created by Figma”) for Android screens.
 4. After setup, obey `.cursor/project-settings.json` (or `.claude/project-settings.json`) — especially `uiFramework`.
 
 ### Gemini localization (`hsg-localize`)
 
-Use this from **Android Studio Gemini** after `.skills/` is in the app root. Invoke **`/hsg-localize`** (type `/hsg` with no space after). It does **not** appear in Cursor `/hs` or Claude `/hsc`. Description starts with **Hypersoft Gemini Skill:**.
+Use this from **Android Studio Gemini Agent** after `.agents/` is in the app root. Invoke **`@hsg-localize`** (type `@hsg`). It does **not** appear in Cursor `/hs` or Claude `/hsc`. Description starts with **Hypersoft Gemini Skill:**.
 
 1. Gemini finds `@LanguageDataSource` and lists language codes.
 2. You confirm languages, then complete vs missing-only localization.
-3. It translates Android `values-*` string resources (native phrasing, placeholders and XML preserved) and reports files created/modified.
+3. It snapshots source strings once, then translates each locale in **parallel** (one worker per language, disjoint `values-*` folders), preserves placeholders/XML, and reports files created/modified.
 
 ### Typical feature flow
 
@@ -57,7 +57,7 @@ Cursor: `/hs-…` · Claude Code: `/hsc-…` (same steps)
 
 ## How to change this template
 
-Read [`MUST_READ_BEFORE_SKILL_CHANGES.md`](MUST_READ_BEFORE_SKILL_CHANGES.md) **before** editing anything under `.cursor/` or `.claude/`. Edit Gemini localization in [`.skills/hsg-localize/SKILL.md`](.skills/hsg-localize/SKILL.md).
+Read [`MUST_READ_BEFORE_SKILL_CHANGES.md`](MUST_READ_BEFORE_SKILL_CHANGES.md) **before** editing anything under `.cursor/` or `.claude/`. Edit Gemini localization in [`.agents/skills/hsg-localize/SKILL.md`](.agents/skills/hsg-localize/SKILL.md).
 
 Hard rules:
 
