@@ -1,6 +1,7 @@
 ---
 name: hsg-localize
-description: Hypersoft Gemini Skill: Interactive Android localization from @LanguageDataSource. Use in Android Studio Gemini to translate strings.xml / values-* resources. Confirm languages and complete vs missing-only before editing files.
+description: 
+    Hypersoft Gemini Skill: Interactive Android localization from @LanguageDataSource. Use in Android Studio Gemini to translate strings.xml / values-* resources. Confirm languages and complete vs missing-only before editing files.
 ---
 
 # Localize — Android Localization Skill
