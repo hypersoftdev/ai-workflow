@@ -56,7 +56,7 @@ Make the minimum necessary changes to achieve the architecture defined by `hs-se
 | Product        | Create defaults                   | Keep current behavior, strings, APIs, ads, analytics, DB, nav                                                           |
 | Versions       | Latest stable catalog             | Keep existing library versions unless a bump is required for the architecture                                           |
 | Firebase / FCM | Add deps; no MessagingService     | Relocate existing Firebase; **keep** an existing `FirebaseMessagingService` / push UI if present                        |
-| Ads            | Do not add without approval       | Keep existing ads architecture; do **not** convert ads to MVI unless the user **explicitly** asks                       |
+| Ads            | Always place `:gmaAds` from GitHub; ask implement yes/no | Keep existing ads if present (no blind overwrite); if none, place `:gmaAds` like new; **not** MVI unless user asks |
 | Entrance       | New start destination             | Insert `EntranceFragment` as start, then route to the **previous** start screen so the user-visible flow stays the same |
 
 Execute every `hs-setup-new-project` step as **migration**: if the slot already exists (prefs helper, API client, Room DB, analytics wrapper), move it into the target module/layer. Create a template file only when that piece is missing.
@@ -93,7 +93,7 @@ Ask, in this order (use AskQuestion when available):
     - Ask explicitly whether they want **night mode**, **day only**, or **both**.
 5. **`writeTestsWithFeatures`** — `true` / `false`. Propose `true`.
 6. **`uiFramework`** — `xml` / `compose`. Detect from the inventory (Compose screens vs XML Fragments). Propose the current stack. **Do not** convert XML ↔ Compose unless the user explicitly asks.
-7. **Ads** — if ads already exist, **keep them** (do not add SDKs, do not convert to MVI). If none exist, do not add without approval.
+7. **Ads** — if a working ads stack already exists → **keep it** (do not convert to MVI; do **not** overwrite with a blind `:gmaAds` copy unless the user asks to migrate). If no ads module → **always place** `:gmaAds` from GitHub (package `{applicationId}.gmaAds` + host remaps only; see `hs-setup-new-project` Step — Place `:gmaAds` / [ads-gma.md](../../../rules/reference/ads-gma.md)). Ask: **Implement ads on screens now?** **yes** → `hs-implement-admob-ads` (existing screens only); **no** → module only.
 
 All later skills **must read** `.cursor/project-settings.json` and obey it. Orientation / night resources are added or skipped **only** from this confirmation — do not add landscape or `values-night` unless the user chose `both` (or that single mode).
 
@@ -162,7 +162,7 @@ Do not rewrite parsers, endpoints, headers, or DB queries.
 3. SharedPreferences: wrap the **existing** prefs file/name in `SharedPrefManager` (sync) + `SharedPrefRepository` (`26-data-persistence` + `reference/shared-preferences.md`). Do not change keys or defaults.
 4. Remote Config: if present, keep **existing keys**; wrap with DataSource + cache-to-prefs (`hs-setup-new-project` Step 8 / `hs-implement-firebase-remote-config`). If missing, add the template RC stack.
 5. Analytics: keep **event names and params**; move posting into `PlatformFirebase` + `EventsProvider`. Do not rename events.
-6. Ads: keep managers / ad ViewModels / mediation. Relocate to `:gmaAds` (or the existing ads module) if still inside `:app`. **Not** MVI unless the user explicitly asks (`21-ads-billing`).
+6. Ads: if existing ads → keep managers / mediation; relocate into `:gmaAds` only if still inside `:app` and structure matches. If no ads → place GitHub `:gmaAds` (package + host remaps). Wire screens only if user said **yes** (`hs-implement-admob-ads`). **Not** MVI unless the user explicitly asks (`21-ads-billing`).
 7. Billing, maps, login SDKs, etc.: keep behavior; place per `02-project-structure`.
 
 Heavy mapping stays in Repository / UseCase — not in Fragments.
@@ -214,7 +214,7 @@ Dispatchers: register **without** `named("io")` / `named("default")`.
 - [ ] User confirmed `project-settings.json` (orientation, themeModes, tests, applicationId, appName, **uiFramework**)
 - [ ] Landscape / `values-night` match the confirmed settings — not added silently
 - [ ] No product behavior rewrite: same APIs, prefs keys, DB schema, analytics event names, ad unit IDs, locales
-- [ ] Ads architecture unchanged (not MVI unless explicitly requested)
+- [ ] Ads: existing stack preserved **or** `:gmaAds` placed from GitHub; screens wired only if user said yes; not MVI unless explicitly requested
 - [ ] Existing FCM service / billing / third-party flows still present
 - [ ] Previous start screen still reachable from Entrance
 - [ ] UI modules (`:presentation` or `:feature-*`) ↛ `:data`; `lazyModule` only

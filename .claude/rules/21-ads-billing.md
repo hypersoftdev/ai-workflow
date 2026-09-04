@@ -1,5 +1,5 @@
 ---
-description: Optional ads and in-app billing / premium patterns
+description: AdMob :gmaAds and in-app billing / premium patterns
 paths:
   - "**/gmaAds/**"
   - "**/admob*/**"
@@ -8,35 +8,34 @@ paths:
   - "**/*.gradle.kts"
 ---
 
-Apply only when the project includes ads and/or IAP. Do not add these modules without approval.
+Apply when the project includes ads and/or IAP. Setup skills **always place** `:gmaAds` from GitHub; screen wiring needs user yes (or `/hsc-implement-admob-ads`).
 
 ## Ads are not MVI
 
-- Ads stay on the **project’s existing ads architecture** (`:gmaAds` managers, existing ad ViewModels, DataSources / Repositories / UseCases as already present)
-- **Do not** apply MVI to ads: no `*Intent` / `*State` / `*Effect`, no `handleIntent`, no `hsc-create-mvi` for ads
-- When updating ads, adding placements, or doing ads work on user request: **match the current project ads code** — do not convert ads into feature MVI
-- Convert ads to MVI **only** if the user **explicitly** asks to do that
+- Ads stay on **`:gmaAds`** (facade + controllers + Fragment/Activity extensions) — **not** Intent / State / Effect
+- Do **not** apply `hsc-create-mvi` to ads; do not inject `AdsManager` in screens
+- Screens call extensions (`loadBannerAd`, `showInterstitialAd`, …) with placement keys
+- Convert ads to MVI **only** if the user **explicitly** asks
 
-## Ads module (e.g. `:gmaAds`)
+Full playbook: [reference/ads-gma.md](reference/ads-gma.md)
 
-- Keep ads in a dedicated module with the project’s existing internal packages (managers, ad ViewModels, data/domain as already present)
-- Presentation may depend on the ads module; feature Fragments use existing managers / ad ViewModels — never raw AdMob SDK calls scattered in every screen
-- Feature screens remain MVI; they **call** ads managers / existing ad ViewModels — they do not own ads load/show as MVI intents unless the project already does that
-- Gate load/show on: **premium purchase flag** + **Remote Config** flags when the project uses them
-- Use named DI qualifiers for parallel placements (`named("banner_home")`, interstitial keys enum)
+Skills: `hsc-implement-admob-ads`, `hsc-add-admob-banner`, `hsc-add-admob-interstitial`, `hsc-add-admob-native`, `hsc-add-admob-rewarded`, `hsc-add-admob-rewarded-interstitial`, `hsc-add-admob-appOpen-Entrance`, `hsc-add-admob-appOpen-lifecycle`
 
-## Ad unit IDs
+## Placing `:gmaAds`
 
-```kotlin
-// build.gradle.kts of ads module
-debug { resValue("string", "admob_banner_home_id", "ca-app-pub-3940256099942544/…") } // Google sample
-release { resValue("string", "admob_banner_home_id", "ca-app-pub-…") } // production
-```
+1. Download from [hypersoftdev/Admob-Ads](https://github.com/hypersoftdev/Admob-Ads) — exact module copy
+2. Package / namespace only: `{applicationId}.gmaAds`
+3. Remap Gradle + host imports (`Constants.TAG_ADS`, `InternetManager`, `SharedPrefManager`, extensions) to this app’s `:core-common` / `:core-platform` / `:data`
+4. During place: **do not** edit engine or catalog (controllers, validators, `AdsSdk`, `FullscreenAdGate`, `ConsentManager`, `*AdConfig`)
+5. Later placements may edit catalog + `:data` RC — leave engine alone unless changing engine behavior
 
-- Debug = Google sample IDs only
-- Release = production IDs
-- Never commit the wrong ID into the wrong build type
-- App ID via manifest/`resValue` — not hardcoded in Kotlin
+## Ads usage invariants
+
+- Gate load/show on **premium** + **Remote Config** ints in `SharedPrefManager` (placements read prefs, not live Firebase)
+- Debug = Google sample unit IDs; release = production; App ID via manifest/`resValue` — not hardcoded in Kotlin
+- New placement = `*AdKey` + `*AdConfig` row + `ad_ids.xml` + RC in `:data` + screen load/show — **not** controller/validator edits
+- Compose: same strategy via host Activity/Fragment extensions — no raw AdMob in composables
+- Feature screens remain MVI; ads calls stay outside Intent/State/Effect ownership
 
 ## Billing / premium
 
@@ -46,13 +45,14 @@ release { resValue("string", "admob_banner_home_id", "ca-app-pub-…") } // prod
 - Product IDs: constants in data/domain — not duplicated in UI
 - After purchase success: update entitlement, then let ads/UI react
 - Full subs + in-app playbook: [reference/premium-billing.md](reference/premium-billing.md)
-- Skills: `premium/hsc-implement-in-app-billing`, `premium/hsc-add-subscription-packages`, `premium/hsc-add-inapp-packages`
+- Skills: `hsc-implement-in-app-billing`, `hsc-add-subscription-packages`, `hsc-add-inapp-packages`
 
 ## Forbidden
 
 - Loading ads when user is premium (unless product says otherwise)
 - Production ad IDs in debug builds
-- Calling BillingClient / MobileAds directly from random Fragments when managers/repos exist
+- Calling BillingClient / MobileAds directly from random Fragments when `:gmaAds` / managers exist
 - Hardcoding secrets or keystore passwords next to billing setup
-- Converting ads to MVI (Intent / State / Effect / `handleIntent`) unless the user explicitly asks
-- Scaffolding ads with `hsc-create-mvi` or wrapping ads managers in feature `*Intent` / `*State` / `*Effect`
+- Converting ads to MVI unless the user explicitly asks
+- Inventing a parallel ads stack instead of copying `:gmaAds` from GitHub
+- Editing engine files when only adding a placement

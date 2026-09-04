@@ -80,6 +80,14 @@ hsc-implement-in-app-billing      Greenfield Play billing (subs + in-app, v4 sta
 hsc-update-in-app-billing         Migrate hypersoft inappbilling v3 → v4.0.0
 hsc-add-subscription-packages     Add subscription tiers to existing billing
 hsc-add-inapp-packages            Add one-time in-app products to existing billing
+hsc-implement-admob-ads           First-time AdMob screen wiring (:gmaAds from GitHub)
+hsc-add-admob-banner              Add banner placement to existing :gmaAds
+hsc-add-admob-interstitial        Add interstitial placement
+hsc-add-admob-native              Add native placement
+hsc-add-admob-rewarded            Add rewarded placement
+hsc-add-admob-rewarded-interstitial  Add rewarded interstitial placement
+hsc-add-admob-appOpen-Entrance    Wire App Open ENTRANCE (splash/consent)
+hsc-add-admob-appOpen-lifecycle   Wire App Open LIFECYCLE (resume)
 ```
 
 ### Typical feature flow
@@ -104,7 +112,7 @@ Data patterns (Retrofit, Room, SharedPreferences) live in **rules** + [`.claude/
 | `11`–`13`              | Testing, naming, libraries                                                                                                              |
 | `14`–`16`              | Security (always), compatibility, logging (always)                                                                                      |
 | `17`–`20`              | Nav, errors, base UI (`19` → `reference/`), permissions                                                                                 |
-| `21`–`25`              | Ads/billing (**ads are not MVI** — keep existing ads architecture unless the user asks), Firebase, startup, Figma assets, in-app update |
+| `21`–`25`              | Ads/billing (**ads are not MVI** — `:gmaAds` from GitHub; see `hsc-implement-admob-ads` / `hsc-add-admob-*` + `reference/ads-gma.md`), Firebase, startup, Figma assets, in-app update |
 | `26-data-persistence`  | Retrofit / Room / SharedPreferences patterns                                                                                            |
 | `27-in-app-review`     | Play In-App Review placement (`InAppReviewManager`)                                                                                     |
 | `28-compose-ui`        | Compose feature modules / Screen-Content / NavGraph (`uiFramework` compose) — [reference/compose-ui.md](rules/reference/compose-ui.md)   |
@@ -121,6 +129,7 @@ Data patterns (Retrofit, Room, SharedPreferences) live in **rules** + [`.claude/
 | `compose-ui.md`                                     | `28-compose-ui`           |
 | `retrofit.md` / `room.md` / `shared-preferences.md` | `26-data-persistence`     |
 | `premium-billing.md`                                | `21-ads-billing`          |
+| `ads-gma.md`                                        | `21-ads-billing`          |
 
 ## Distribution
 
